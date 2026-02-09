@@ -2,8 +2,6 @@
 
 A modern, interactive web application built with Shiny for Python that queries the Weatherstack API to display current weather conditions for selected US cities. The app features a dark-themed UI and provides real-time weather data on demand.
 
-![Weather Dashboard Screenshot](Screenshot%202026-02-01%20at%208.16.07%20PM.png)
-
 ---
 
 ## Table of Contents
@@ -16,7 +14,6 @@ A modern, interactive web application built with Shiny for Python that queries t
 - [💻 Usage Instructions](#-usage-instructions)
 - [📁 Project Structure](#-project-structure)
 - [🔧 Technical Details](#-technical-details)
-- [📸 Screenshots](#-screenshots)
 - [⚠️ Troubleshooting](#️-troubleshooting)
 - [📚 Additional Resources](#-additional-resources)
 
@@ -56,10 +53,10 @@ The application uses a reactive programming model where API calls are made only 
 
 ### Step 1: Install Dependencies
 
-Navigate to the `01_query_api` directory and install the required Python packages:
+From the repository root, navigate to the `02_productivity/app` directory and install the required Python packages:
 
 ```bash
-cd 01_query_api
+cd 02_productivity/app
 pip install -r requirements.txt
 ```
 
@@ -90,7 +87,7 @@ The application requires a Weatherstack API key to function. Follow these steps:
    - Navigate to your dashboard to retrieve your API key
 
 2. **Create a `.env` file:**
-   - In the `01_query_api` directory, create a file named `.env`
+   - In the `02_productivity/app` directory, create a file named `.env`
    - Add the following line (replace `your_weatherstack_api_key` with your actual key):
 
    ```env
@@ -190,15 +187,13 @@ The app handles various error scenarios:
 ## 📁 Project Structure
 
 ```
-01_query_api/
+02_productivity/app/
 ├── app.py                    # Main Shiny application (UI + server logic)
 ├── weather_api.py            # Weatherstack API helper module
 ├── requirements.txt          # Python dependencies (includes numpy)
 ├── requirements-shiny.txt    # Python dependencies (minimal)
 ├── .env                      # API key configuration (create this file)
-├── README.md                 # General query_api directory README
-├── README_Shiny_Weather.md  # This file
-└── Screenshot*.png           # Application screenshots
+└── README_Shiny_Weather.md   # This file
 ```
 
 ### File Descriptions
@@ -240,19 +235,6 @@ The app handles various error scenarios:
 ### Rate Limiting
 
 The app includes a 1-second delay between city queries to respect Weatherstack API rate limits and prevent request throttling.
-
----
-
-## 📸 Screenshots
-
-### Main Dashboard View
-![Weather Dashboard - Main View](Screenshot%202026-02-01%20at%208.16.07%20PM.png)
-
-### Weather Results Display
-![Weather Dashboard - Results](Screenshot%202026-02-01%20at%208.32.32%20PM.png)
-
-### Multiple Cities Selected
-![Weather Dashboard - Multiple Cities](Screenshot%202026-02-01%20at%208.33.01%20PM.png)
 
 ---
 
