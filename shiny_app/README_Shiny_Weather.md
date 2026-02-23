@@ -2,7 +2,7 @@
 
 **SYSEN 5381 — Homework 1: AI-Powered Reporter Software**
 
-The Weather Dashboard is an AI-powered reporter application that queries current weather conditions from up to ten U.S. cities and evaluates conditions by use case (e.g., athlete training, road trip). Data is provided by the free Weatherstack API; reports are produced by OpenAI or Ollama. The app features a dark-themed UI, real-time weather on demand, optional sample data when the API rate limit is reached, and AI-generated condition summaries and advisories tailored to the user’s use case.
+The Weather Dashboard is an AI-powered reporter application that queries current weather conditions from up to ten U.S. cities and evaluates conditions by use case (e.g., athlete training, road trip). Data is provided by the free Weatherstack API; **reports are produced by Ollama** (or optionally OpenAI). Per SYSEN 5381 Homework 1, the app supports Ollama for AI reporting—either run Ollama locally or use Ollama cloud with an API key. The app also supports OpenAI if `OPENAI_API_KEY` is set. It features a dark-themed UI, real-time weather on demand, optional sample data when the Weatherstack rate limit is reached, and AI-generated condition summaries and advisories tailored to the user’s use case.
 
 ---
 
@@ -129,9 +129,24 @@ The application uses the Weatherstack Current Weather API to retrieve real-time 
 
 **Request a free API key:** [https://weatherstack.com/signup/free](https://weatherstack.com/signup/free)
 
-### Optional: AI (OpenAI or Ollama)
+### Ollama (AI reports)
 
-For **Generate AI Insights**, use either OpenAI (`OPENAI_API_KEY` in `.env`) or Ollama (local or cloud with `OLLAMA_API_KEY`). See [Technical Details → API Keys](#api-keys). Without an AI key, the app still runs; the AI button will show an error until configured or when using sample data.
+Per Homework 1, **reports are produced by Ollama**. The app uses Ollama to generate the condition summary and use-case advisories when you click **Generate AI Insights**. You can use Ollama in two ways:
+
+1. **Ollama local (no API key)** — Run Ollama on your machine and pull a model (e.g. `ollama run llama3.2`). The app will call `http://localhost:11434/api/generate` when no OpenAI key is set. No `OLLAMA_API_KEY` needed.
+2. **Ollama cloud** — Use Ollama’s cloud API. In the **app3** directory, add to `.env`:
+   ```env
+   OLLAMA_API_KEY=your_ollama_api_key
+   ```
+   The app then uses `https://ollama.com/api/chat` when OpenAI and local Ollama are not used.
+
+**Request Ollama API key / documentation:** [https://docs.ollama.com/](https://docs.ollama.com/)
+
+The AI module (`ai_weather.py`) tries providers in this order: **OpenAI** (if `OPENAI_API_KEY` is set) → **Ollama local** (if the Ollama server is running) → **Ollama cloud** (if `OLLAMA_API_KEY` is set). Without any of these, the AI button shows an error or sample output.
+
+### Optional: OpenAI
+
+You can use OpenAI instead of or before Ollama by setting `OPENAI_API_KEY=your_openai_key` in `.env`. The app will try OpenAI first, then fall back to Ollama (local then cloud). See [Technical Details](#api-key-and-endpoint) for the full list of keys.
 
 ---
 
@@ -266,14 +281,17 @@ Table summarizing the columns in the API data returned by `fetch_weather()` (Wea
 
 ## 🔧 Technical Details
 
-Information needed to understand and run the software (aligned with Homework 1 documentation).
+Information needed to understand and run the software (aligned with SYSEN 5381 Homework 1 documentation).
 
 ### API Key and Endpoint
 
-- **API Key:** `WEATHER_API_KEY` (stored in `.env` in the app3 directory).
+As in the Homework 1 Technical Details:
+
+- **Weather API Key:** `WEATHER_API_KEY=your_weatherstack_api_key` (in `.env` in the app3 directory).
+- **Ollama API Key (optional, for Ollama cloud):** `OLLAMA_API_KEY=your_ollama_api_key` (in `.env`). Not required if you run Ollama locally.
 - **Endpoint:** `http://api.weatherstack.com/current` — retrieve real-time weather for specified locations.
 
-Optional for AI: `OPENAI_API_KEY` or `OLLAMA_API_KEY` in `.env`. See [API Requirements → Optional: AI](#optional-ai-openai-or-ollama).
+For AI reports, the app uses (in order) OpenAI (`OPENAI_API_KEY`), then Ollama local (no key; requires `ollama run <model>`), then Ollama cloud (`OLLAMA_API_KEY`). See [Ollama (AI reports)](#ollama-ai-reports) and [Request Ollama API key](https://docs.ollama.com/).
 
 ### Packages
 
@@ -302,7 +320,8 @@ Optional for AI: `OPENAI_API_KEY` or `OLLAMA_API_KEY` in `.env`. See [API Requir
 
 - **Install dependencies:** `pip install -r requirements.txt`
 - **Entry point:** Run from the **app3** directory with `shiny run app.py`
-- **Request free API key:** [https://weatherstack.com/signup/free](https://weatherstack.com/signup/free)
+- **Request Weather API key:** [https://weatherstack.com/signup/free](https://weatherstack.com/signup/free)
+- **Request Ollama API key / docs:** [https://docs.ollama.com/](https://docs.ollama.com/)
 
 ### Architecture
 
@@ -340,6 +359,9 @@ The app uses a 1-second delay between city requests in `weather_api.fetch_weathe
 **Issue:** Port already in use
 - **Solution:** Shiny will automatically try another port, or stop other Shiny apps running
 
+**Issue:** "Generate AI Insights" fails or shows "No AI provider available"
+- **Solution:** Use at least one of: (1) Set `OPENAI_API_KEY` in `.env`, or (2) Run Ollama locally (e.g. `ollama run llama3.2`) so the app can call localhost, or (3) Set `OLLAMA_API_KEY` in `.env` for Ollama cloud. See [Ollama (AI reports)](#ollama-ai-reports) and [docs.ollama.com](https://docs.ollama.com/).
+
 ---
 
 ## 📚 Additional Resources
@@ -347,6 +369,7 @@ The app uses a 1-second delay between city requests in `weather_api.fetch_weathe
 - [Shiny for Python Documentation](https://shiny.posit.co/py/)
 - [Weatherstack API Documentation](https://weatherstack.com/documentation)
 - [Weatherstack free signup](https://weatherstack.com/signup/free)
+- [Ollama documentation / API](https://docs.ollama.com/) — for running Ollama locally or obtaining an Ollama API key for cloud
 - [Python-dotenv Documentation](https://pypi.org/project/python-dotenv/)
 
 ---
