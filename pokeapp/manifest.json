@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "locale": "en_US.UTF-8",
+  "metadata": {
+    "appmode": "python-shiny",
+    "entrypoint": "shiny.express.app:app_5f_pokemon_2e_py"
+  },
+  "python": {
+    "version": "3.9.7",
+    "package_manager": {
+      "name": "pip",
+      "version": "26.0.1",
+      "package_file": "requirements.txt"
+    }
+  },
+  "files": {
+    "requirements.txt": {
+      "checksum": "0138580bee4e29af806343c78bb03169"
+    },
+    ".env": {
+      "checksum": "2132e44665db0c4922bd444253c2a0f3"
+    },
+    ".env.example": {
+      "checksum": "db8828b572336211fdf8764e6d614d74"
+    },
+    "agents_pokemon.py": {
+      "checksum": "0cb8fc39ccf44cfe783873f91b050431"
+    },
+    "ai_pokemon.py": {
+      "checksum": "e65c5d386313669ed1d4980fc2a49bfd"
+    },
+    "api_pokemon.py": {
+      "checksum": "6e7a3c157c484a85f66f21c254037622"
+    },
+    "app_pokemon.py": {
+      "checksum": "29d5029fd7bc7b4f603c48f02ae32e66"
+    },
+    "deployme.sh": {
+      "checksum": "81d5a5df6c780fe7dc851e8a8f2e51e2"
+    },
+    "manifestme.sh": {
+      "checksum": "147e27b7048327a0f255f944b24a33d0"
+    }
+  }
+}

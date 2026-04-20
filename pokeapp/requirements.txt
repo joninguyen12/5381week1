@@ -1,0 +1,8 @@
+# Pokédex Shiny app — minimal deps for Posit Connect / local runs.
+# Regenerate manifest after editing: ./manifestme.sh (best: use a clean venv with only these installed).
+pandas>=2.0
+plotly>=6.0
+shiny>=1.5
+shinyswatch>=0.10
+requests>=2.28
+python-dotenv>=1.0

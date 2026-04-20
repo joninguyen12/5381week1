@@ -1,0 +1,12 @@
+{
+    "https://connect.systems-apps.com": {
+        "server_url": "https://connect.systems-apps.com",
+        "filename": "/Users/joninguyen/Desktop/pokeapp",
+        "app_url": "https://connect.systems-apps.com/content/eedd6fa5-4068-4e23-a3ea-333f035c8fa9/",
+        "app_id": "219",
+        "app_guid": "eedd6fa5-4068-4e23-a3ea-333f035c8fa9",
+        "title": "pokedex-explorer",
+        "app_mode": "python-shiny",
+        "app_store_version": 1
+    }
+}
