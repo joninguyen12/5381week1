@@ -870,6 +870,23 @@ with ui.navset_underline(id="main_tabs", selected="explore"):
             class_="text-secondary mb-4",
         )
 
+        ui.h5("Filtering the Explore cards (sidebar)", class_="fw-semibold mb-2")
+        ui.p(
+            "The sidebar controls which Pokémon show up as cards on the Explore tab and in the dropdowns:",
+            class_="text-secondary small mb-2",
+        )
+        ui.tags.ul(
+            ui.tags.li("Discovery source: switch between the full National Pokédex or a specific Generation."),
+            ui.tags.li("Page size + Previous/Next: controls how many cards you see at once and which page you’re on."),
+            ui.tags.li("Refresh list: reloads the list after you change the source or page size."),
+            class_="text-secondary small mb-4",
+        )
+        ui.p(
+            "This filtering changes the list you browse (the Explore grid and dropdown choices). Once you select a "
+            "Pokémon, the Details and Battle views load that Pokémon’s full information.",
+            class_="text-secondary small mb-4",
+        )
+
         ui.h5("Explore", class_="fw-semibold mb-2")
         ui.p(
             "Skim the Pokémon on your current page as clickable cards with artwork. Use this to discover "

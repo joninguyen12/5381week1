@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import json
 import os
+import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -124,13 +126,21 @@ TOOLS_REGISTRY: List[Dict[str, str]] = [
     },
 ]
 
+def _now_ms() -> int:
+    return int(time.time() * 1000)
+
 
 # -----------------------------------------------------------------------------
 # Agent 1 — Data Retriever (no LLM): orchestrates tools → RAG JSON
 # -----------------------------------------------------------------------------
 
 
-def _ability_rows_parallel(pokemon_compact: Dict[str, Any], timeout: float) -> List[Dict[str, Any]]:
+def _ability_rows_parallel(
+    pokemon_compact: Dict[str, Any],
+    timeout: float,
+    *,
+    tool_counts: Optional[Dict[str, int]] = None,
+) -> List[Dict[str, Any]]:
     abs_meta = list(pokemon_compact.get("abilities") or [])
     slugs: List[str] = []
     for a in abs_meta:
@@ -141,6 +151,8 @@ def _ability_rows_parallel(pokemon_compact: Dict[str, Any], timeout: float) -> L
         return []
 
     def one(slug: str) -> Tuple[str, str]:
+        if tool_counts is not None:
+            tool_counts["tool_fetch_ability_description_en"] = tool_counts.get("tool_fetch_ability_description_en", 0) + 1
         try:
             return slug, tool_fetch_ability_description_en(slug, timeout=timeout)
         except Exception as exc:
@@ -177,8 +189,10 @@ def _stats_list_to_dict(pokemon_compact: Dict[str, Any]) -> Dict[str, int]:
     return d
 
 
-def _half_rag_from_raw(raw: dict, timeout: float) -> Dict[str, Any]:
+def _half_rag_from_raw(raw: dict, timeout: float, *, tool_counts: Optional[Dict[str, int]] = None) -> Dict[str, Any]:
     pc = extract_pokemon(raw)
+    if tool_counts is not None:
+        tool_counts["tool_sample_level_up_moves_with_stats"] = tool_counts.get("tool_sample_level_up_moves_with_stats", 0) + 1
     moves = tool_sample_level_up_moves_with_stats(
         str(pc.get("name") or ""),
         raw=raw,
@@ -190,7 +204,7 @@ def _half_rag_from_raw(raw: dict, timeout: float) -> Dict[str, Any]:
         "id": pc.get("id"),
         "types": [t.get("name") for t in (pc.get("types") or []) if t.get("name")],
         "stats": _stats_list_to_dict(pc),
-        "abilities": _ability_rows_parallel(pc, timeout=timeout),
+        "abilities": _ability_rows_parallel(pc, timeout=timeout, tool_counts=tool_counts),
         "level_up_moves_sample": moves,
     }
 
@@ -201,16 +215,18 @@ def agent_data_retriever(pokemon_a: str, pokemon_b: str, timeout: float = 45.0) 
     """
     a = str(pokemon_a).strip().lower()
     b = str(pokemon_b).strip().lower()
+    tool_counts: Dict[str, int] = {}
 
     with ThreadPoolExecutor(2) as ex:
+        tool_counts["tool_fetch_pokemon"] = tool_counts.get("tool_fetch_pokemon", 0) + 2
         fut_a = ex.submit(fetch_pokemon, a, timeout)
         fut_b = ex.submit(fetch_pokemon, b, timeout)
         raw_a = fut_a.result()
         raw_b = fut_b.result()
 
     with ThreadPoolExecutor(2) as ex:
-        ha = ex.submit(_half_rag_from_raw, raw_a, timeout)
-        hb = ex.submit(_half_rag_from_raw, raw_b, timeout)
+        ha = ex.submit(_half_rag_from_raw, raw_a, timeout, tool_counts=tool_counts)
+        hb = ex.submit(_half_rag_from_raw, raw_b, timeout, tool_counts=tool_counts)
         half_a = ha.result()
         half_b = hb.result()
 
@@ -220,6 +236,7 @@ def agent_data_retriever(pokemon_a: str, pokemon_b: str, timeout: float = 45.0) 
         "meta": {
             "source": "PokeAPI via tool_fetch_* helpers",
             "note": f"Level-up moves only, first {MOVE_SAMPLE_CAP} by level-up order (see api_pokemon max_moves).",
+            "tools_used": tool_counts,
         },
     }
 
@@ -237,6 +254,39 @@ STRICT GROUNDING — do not make anything up:
 - Win-chance language must be clearly qualitative and tied to visible stats/moves in RAG_DATA, not a precise or invented percentage.
 """
 
+def _extract_winner_token(text: str) -> str | None:
+    """
+    Parse a winner token from model output.
+    Expected line anywhere: "Winner: <pokemon_a|pokemon_b|unclear>"
+    """
+    for raw in str(text or "").splitlines():
+        line = raw.strip()
+        if not line.lower().startswith("winner:"):
+            continue
+        tok = line.split(":", 1)[1].strip().lower()
+        if tok in ("pokemon_a", "pokemon_b", "unclear", "tie"):
+            return "unclear" if tok == "tie" else tok
+    return None
+
+
+def _strip_winner_markup(text: str) -> str:
+    """
+    Remove any Winner section/lines from model output for clean UI display.
+    - Drops lines that are exactly '## Winner'
+    - Drops lines that start with 'Winner:'
+    """
+    out_lines: list[str] = []
+    for raw in str(text or "").splitlines():
+        line = raw.rstrip("\n")
+        s = line.strip()
+        if s == "## Winner":
+            continue
+        if s.lower().startswith("winner:"):
+            continue
+        out_lines.append(line)
+    # Trim extra blank lines created by removals
+    cleaned = "\n".join(out_lines).strip()
+    return cleaned
 
 def _llm_route(prompt: str, timeout: float = 120.0) -> str:
     return call_ollama(prompt, timeout=timeout)
@@ -268,6 +318,10 @@ OUTPUT FORMAT (markdown sections):
 ## Recommended moves (Pokémon A)
 ## Recommended moves (Pokémon B)
 ## Risks / counters visible in the data
+## Winner
+
+In the Winner section, include exactly one machine-readable line:
+Winner: pokemon_a | pokemon_b | unclear
 """
     return _llm_route(prompt, timeout=timeout)
 
@@ -288,6 +342,9 @@ ANALYST (strategy — treat as authoritative interpretation of the same data):
 Write 2–4 short paragraphs:
 - Who likely has the edge and why (speed, power, typings, coverage) referencing specific stats/moves from RAG_DATA.
 - A punchy one-line "likely outcome" caveat that this is a simplified singles-style analysis using only the sampled moves.
+
+End with exactly one machine-readable line:
+Winner: pokemon_a | pokemon_b | unclear
 """
     return _llm_route(prompt, timeout=timeout)
 
@@ -310,11 +367,17 @@ PART 1 — Strategy analyst (markdown). Use exactly these section headings:
 ## Recommended moves (Pokémon A)
 ## Recommended moves (Pokémon B)
 ## Risks / counters visible in the data
+## Winner
+
+In the Winner section, include exactly one machine-readable line:
+Winner: pokemon_a | pokemon_b | unclear
 
 Then output a single line containing exactly:
 ---NARRATIVE---
 
 PART 2 — Battle narrator: after that line, write 2–4 short paragraphs on who likely has the edge and why (reference stats/moves from RAG_DATA). End with one line noting this is a simplified analysis using only the sampled level-up moves.
+Then end with exactly one machine-readable line:
+Winner: pokemon_a | pokemon_b | unclear
 """
     text = _llm_route(prompt, timeout=timeout)
     if "---NARRATIVE---" in text:
@@ -341,15 +404,28 @@ def run_battle_matchup_analysis(
         strategy, narrative = agent_combined_strategy_and_narrator(rag, timeout=timeout)
     name_a = (rag.get("pokemon_a") or {}).get("name") or pokemon_a
     name_b = (rag.get("pokemon_b") or {}).get("name") or pokemon_b
-    mode = "two LLM calls (BATTLE_TWO_LLM_CALLS)" if _use_two_llm_calls() else "single LLM call (strategy + narrative)"
+    # Internal note only (not displayed in UI)
+    _mode = "two LLM calls (BATTLE_TWO_LLM_CALLS)" if _use_two_llm_calls() else "single LLM call (strategy + narrative)"
+    winner_tok = _extract_winner_token(narrative) or _extract_winner_token(strategy) or "unclear"
+    winner_name = (
+        str(name_a).title()
+        if winner_tok == "pokemon_a"
+        else str(name_b).title()
+        if winner_tok == "pokemon_b"
+        else "Unclear"
+    )
+
+    strategy_disp = _strip_winner_markup(strategy)
+    narrative_disp = _strip_winner_markup(narrative)
+
     final_md = "\n\n".join(
         [
             f"# Battle matchup: {name_a} vs {name_b}",
-            f"_(Generation: {mode})_",
+            f"The winner of this battle is.... {winner_name}",
             "## Strategy analysis (Agent 2)",
-            strategy.strip(),
+            strategy_disp,
             "## Battle summary (Agent 3)",
-            narrative.strip(),
+            narrative_disp,
         ]
     )
     return {
@@ -373,5 +449,83 @@ def run_battle_matchup_safe(pokemon_a: str, pokemon_b: str, *, timeout: float = 
         return f"Battle matchup error: {exc}"
 
 
+def terminal_demo(pokemon_a: str = "pikachu", pokemon_b: str = "squirtle") -> int:
+    """
+    Print a screenshot-friendly terminal run showing:
+    - multi-agent workflow (Agent 1 → Agent 2 → Agent 3)
+    - RAG bundle (retrieved JSON excerpt)
+    - tool usage (tool function names + counts)
+    """
+    a = str(pokemon_a).strip().lower()
+    b = str(pokemon_b).strip().lower()
+
+    print()
+    print("===============================================================")
+    print("⚔️  agents_pokemon.py — Battle Matchup Summary (Multi-Agent + RAG)")
+    print("===============================================================\n")
+
+    print("✅ What this run demonstrates (for screenshots):")
+    print("   1) Multi-agent workflow (Agent 1 → Agent 2 → Agent 3)")
+    print("   2) RAG retrieval bundle (grounded JSON excerpt)")
+    print("   3) Function calling / tool usage (tool_* definitions + counts)\n")
+
+    print("🔧 Tool definitions available (function-calling surface):")
+    for t in TOOLS_REGISTRY:
+        print(f"   - {t.get('name')}: {t.get('purpose')}")
+    print()
+
+    print(f"🎯 Matchup request: A='{a}' vs B='{b}'\n")
+
+    t0 = _now_ms()
+    print("🤖 Agent 1 — Data Retriever (tools → RAG JSON) ...")
+    rag = agent_data_retriever(a, b, timeout=45.0)
+    t1 = _now_ms()
+    tools_used = (rag.get("meta") or {}).get("tools_used") or {}
+    print(f"   ✅ RAG bundle built in {t1 - t0} ms")
+    print("   🧰 Tools used (counts):")
+    for k in sorted(tools_used.keys()):
+        print(f"      - {k}: {tools_used[k]}")
+    print()
+
+    print("📚 RAG_DATA excerpt (Using ONLY the data below):")
+    blob = json.dumps(rag, indent=2, ensure_ascii=False, default=str)
+    # Keep terminal output screenshot-friendly
+    lines = blob.splitlines()
+    cap = int(os.getenv("DEMO_RAG_LINES", "120") or 120)
+    for ln in lines[:cap]:
+        print(ln)
+    if len(lines) > cap:
+        print(f"... (truncated; total lines={len(lines)})")
+    print()
+
+    print("🤖 Agent 2 — Strategy Analyst (LLM; grounded to RAG_DATA) ...")
+    t2 = _now_ms()
+    strategy = agent_strategy_analyst(rag, timeout=120.0)
+    t3 = _now_ms()
+    print(f"   ✅ Agent 2 complete in {t3 - t2} ms\n")
+    print("----- AGENT 2 OUTPUT (Strategy analysis) -----")
+    print(strategy.strip())
+    print("--------------------------------------------\n")
+
+    print("🤖 Agent 3 — Battle Narrator (LLM; grounded to RAG_DATA + Agent 2) ...")
+    t4 = _now_ms()
+    narrative = agent_battle_narrator(rag, strategy, timeout=120.0)
+    t5 = _now_ms()
+    print(f"   ✅ Agent 3 complete in {t5 - t4} ms\n")
+    print("----- AGENT 3 OUTPUT (Battle summary) -----")
+    print(narrative.strip())
+    print("------------------------------------------\n")
+
+    print("✅ Done. Screenshot any of the sections above.")
+    return 0
+
+
 if __name__ == "__main__":
-    print(run_battle_matchup_safe("pikachu", "squirtle"))
+    # Usage:
+    #   python agents_pokemon.py
+    #   python agents_pokemon.py pikachu squirtle
+    #   DEMO_RAG_LINES=200 python agents_pokemon.py pikachu bulbasaur
+    args = [a for a in sys.argv[1:] if a.strip()]
+    if len(args) >= 2:
+        raise SystemExit(terminal_demo(args[0], args[1]))
+    raise SystemExit(terminal_demo("pikachu", "squirtle"))
