@@ -1,0 +1,5 @@
+Totodile is a small, upright‑shaped Pokémon that sports a blue coloration and is typically found at the water’s edge. Its Pokédex classifies it as a “Big Jaw Pokémon,” and it belongs to the **monster** and **water1** egg groups. Though its capture rate is modest (45), it is not a baby, legendary, or mythical creature.
+
+The species evolves in a straightforward line: Totodile → Croconaw → Feraligatr. Across the various game versions — Gold, Silver, Crystal, Ruby, Emerald, FireRed, LeafGreen, Diamond, HeartGold, Omega‑Ruby — the flavor‑text entries all caution that, despite its tiny frame, its jaws are strong enough to crush objects and can bite anything that moves, with slight wording differences depending on the version.
+
+Overall, Totodile’s lore emphasizes its rough, tough nature and the need for trainers to stay vigilant around its powerful bite, while its habitat, appearance (blue and upright), and egg‑group affiliations are clearly defined in the source data.

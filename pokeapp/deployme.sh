@@ -39,6 +39,16 @@ if [ -z "${CONNECT_SERVER:-}" ]; then
   exit 1
 fi
 
+# Fix a common typo: CONNECT_SERVER=https:https://host/path
+if [[ "$CONNECT_SERVER" == https:https://* ]]; then
+  echo "deployme.sh: detected CONNECT_SERVER starting with 'https:https://'; fixing to 'https://...'" >&2
+  CONNECT_SERVER="${CONNECT_SERVER#https:}"
+fi
+if [[ "$CONNECT_SERVER" == http:http://* ]]; then
+  echo "deployme.sh: detected CONNECT_SERVER starting with 'http:http://'; fixing to 'http://...'" >&2
+  CONNECT_SERVER="${CONNECT_SERVER#http:}"
+fi
+
 # Accept bare hostnames (e.g. connect.posit.cloud) — common .env mistake; rsconnect needs a full URL.
 case "$CONNECT_SERVER" in
   http://*|https://*) ;;
@@ -70,9 +80,12 @@ fi
 unset _connect_rest CONNECT_HOST
 export CONNECT_SERVER
 
-# Connect Cloud often exposes one Python (e.g. 3.12.x); local conda may differ — override so the server can build.
-CONNECT_PYTHON_VERSION="${CONNECT_PYTHON_VERSION:-3.12.4}"
-export CONNECT_PYTHON_VERSION
+# Prefer .python-version (rsconnect deprecated --override-python-version).
+PYVER="${CONNECT_PYTHON_VERSION:-3.12.4}"
+if [ ! -f .python-version ]; then
+  printf '%s\n' "$PYVER" > .python-version
+  echo "deployme.sh: wrote .python-version=$PYVER" >&2
+fi
 
 if [ -z "${CONNECT_API_KEY:-}" ]; then
   echo "deployme.sh: CONNECT_API_KEY is empty or missing in $DIR/.env" >&2
@@ -88,7 +101,6 @@ rsconnect deploy shiny \
   --title "$TITLE" \
   --server "$CONNECT_SERVER" \
   --api-key "$CONNECT_API_KEY" \
-  --override-python-version "$CONNECT_PYTHON_VERSION" \
   -x ".env" \
   -x ".git" \
   -x ".gitignore" \

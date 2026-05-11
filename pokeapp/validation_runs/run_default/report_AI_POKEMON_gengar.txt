@@ -1,0 +1,7 @@
+Gengar is the third and final member of its evolution line, which starts with the floating ghost Gastly and then becomes Haunter before reaching its mature form as Gengar.  
+
+It makes its home in caves, takes on an upright shape, and is colored a deep purple. Its egg group is listed as “indeterminate,” and the data confirms that it is neither a baby, a legendary, nor a mythical Pokémon.  
+
+Across many game versions, the Pokédex entries describe Gengar as a playful yet eerie presence that hides in shadows, steals heat from its surroundings, and can cause sudden drops in temperature. Some versions note that it mimics a person’s shadow to frighten them, while others warn that a chill in the air signals its arrival. These flavor texts vary slightly by game, but they all emphasize its habit of lurking unseen and delighting in casting curses or sowing fear.  
+
+*All factual details above are drawn directly from the supplied JSON; fields such as typing, abilities, stats, or move data are not included in this source.*

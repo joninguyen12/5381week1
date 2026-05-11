@@ -1,0 +1,5 @@
+RALTS, known as the Feeling Pokémon, is described as a white, humanoid‑shaped creature that lives in urban areas. It belongs to the “humanshape” and “indeterminate” egg groups and is not marked as a baby, legendary, or mythical species in the source data.
+
+The Pokédex entries for this Pokémon repeatedly note that RALTS uses the horns on its head to sense human emotions, often appearing before people who seem cheerful. When it detects a positive mood, it becomes more upbeat itself, and it will hide if it detects any hostility. The flavor texts differ slightly across versions — some emphasize “drawing closer to a person with a good disposition,” while others say it “grows cheerful in the same way as its trainer” — but the core idea of emotion‑sensing remains the same.
+
+From the evolution‑species list we see the family proceeds as ralts → kirlia → gardevoir → gallade, suggesting that a RALTS can evolve into KIRLIA and then branch into either GARDEVOIR or GALLADE. The JSON provides no further details about the forms’ appearances, abilities, or stats, only the ordered list of possible evolutions.

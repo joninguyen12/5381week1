@@ -1,0 +1,7 @@
+Lucario, known as the **Aura Pokémon**, is described in the Pokédex by its **blue** coloration and **upright** shape. It is classified as an “Aura Pokémon,” a name that appears in the official species data.
+
+The line’s evolutionary relatives are listed as **Riolu** and then **Lucario**, meaning the species evolves from a smaller form called Riolu into the well‑known Lucario. This two‑stage family is presented in the order given by the `evolution_species_names` field.
+
+Lucario’s habitat is not specified in the data, and it has a **capture rate of 45**. It belongs to the **Ground** and **Human‑Shape** egg groups, and it is neither a baby, legendary, nor mythical Pokémon (all three flags are false).  
+
+Across the many game versions detailed in the `flavor_texts_en` entries, the Pokédex notes that Lucario can sense the auras of all things, understand human speech, read thoughts and movements, detect emotions from over half a mile away, and even manipulate auras in battle. Some versions describe its aura waves as powerful enough to crush boulders, while others emphasize that only trainers with a sense of justice can earn its trust. The exact wording varies by version, but the core idea is that Lucario is attuned to the emotional and energetic states of other beings.

@@ -1,0 +1,22 @@
+{
+  "homework3_alignment": {
+    "custom_rubric": "Five hallucination count dimensions + factual_precision_0_1 + groundedness_0_100 (not LAB Likert).",
+    "qualitative_reviewer": "Ollama /api/chat JSON \u2014 counts, instances, reviewer_notes.",
+    "prompts_compared": [
+      "AI_POKEMON",
+      "RAG",
+      "RAG_PARTIAL",
+      "NON_RAG"
+    ],
+    "scores_collected_per_prompt": {
+      "AI_POKEMON": 10,
+      "NON_RAG": 10,
+      "RAG": 10,
+      "RAG_PARTIAL": 10
+    },
+    "total_validation_scores": 40,
+    "species_per_arm": 10,
+    "statistics_script_prints": "Welch t-tests, ANOVA (if >=3 arms), OLS if statsmodels installed",
+    "csv": "validation_experiment_scores.csv"
+  }
+}

@@ -13,27 +13,35 @@
       "package_file": "requirements.txt"
     }
   },
+  "environment": {
+    "python": {
+      "requires": "~=3.12.0"
+    }
+  },
   "files": {
     "requirements.txt": {
       "checksum": "0138580bee4e29af806343c78bb03169"
     },
     ".env": {
-      "checksum": "2132e44665db0c4922bd444253c2a0f3"
+      "checksum": "5d88ccb5561acedb72f5b57e5c3fd736"
     },
     ".env.example": {
-      "checksum": "db8828b572336211fdf8764e6d614d74"
+      "checksum": "9a2ebf7de472e6334edc6d2d28a26220"
+    },
+    ".python-version": {
+      "checksum": "0885a8b0e7355de614d6685033e058f6"
     },
     "agents_pokemon.py": {
-      "checksum": "0cb8fc39ccf44cfe783873f91b050431"
+      "checksum": "0021b98f2dd767a95bfd0c21d2a5b0e2"
     },
     "ai_pokemon.py": {
-      "checksum": "e65c5d386313669ed1d4980fc2a49bfd"
+      "checksum": "0cf996badaafba4e4debee9901630ede"
     },
     "api_pokemon.py": {
       "checksum": "6e7a3c157c484a85f66f21c254037622"
     },
     "app_pokemon.py": {
-      "checksum": "29d5029fd7bc7b4f603c48f02ae32e66"
+      "checksum": "671bdc41e62e6547f65e9bd04aaa59c0"
     },
     "deployme.sh": {
       "checksum": "81d5a5df6c780fe7dc851e8a8f2e51e2"
